@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: memos_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - /mnt/storage/memos_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  memos:
+    image: ghcr.io/usememos/memos:latest
+    container_name: memos_app
+    restart: unless-stopped
+    environment:
+      MEMOS_DRIVER: postgres
+      MEMOS_DSN: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+    volumes:
+      - /mnt/storage/memos_data:/var/opt/memos
+    depends_on:
+      - postgres
+    ports:
+      - "5230:5230"
